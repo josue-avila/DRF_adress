@@ -17,14 +17,14 @@ class AdressApi(APIView):
     def post(self, request):
         serializer = AdressSerializer(data=request.data)
         if serializer.is_valid():
-            rqst = requests.get(f"https://viacep.com.br/ws/{serializer['cep']}/json")
-            result = rqst.json()
+            rqst = requests.get(f"https://viacep.com.br/ws/{serializer.validated_data['cep']}/json")
+            result = json.loads(rqst.content)
             if result:
-                serializer.data['cep'] = result['cep']
-                serializer.data['street'] = result['logradouro']
-                serializer.data['district'] = result['bairro']
-                serializer.data['city'] = result['localidade']
-                serializer.data['state'] = result['uf']
+                serializer.validated_data['cep'] = result['cep']
+                serializer.validated_data['street'] = result['logradouro']
+                serializer.validated_data['district'] = result['bairro']
+                serializer.validated_data['city'] = result['localidade']
+                serializer.validated_data['state'] = result['uf']
 
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
