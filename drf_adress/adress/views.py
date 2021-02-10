@@ -12,19 +12,20 @@ class AdressViewSet(viewsets.ModelViewSet):
     queryset = Adress.objects.all().order_by('cep')
     serializer_class = AdressSerializer
 
+
 class AdressApi(APIView):
-    def post(self, request, format=None):
+    def post(self, request):
         serializer = AdressSerializer(data=request.data)
         if serializer.is_valid():
-            cep = requests.get(f"https://viacep.com.br/ws/{serialize.validated_data['cep']}/json/")
-            result = json.loads(cep.content)
+            rqst = requests.get(f"https://viacep.com.br/ws/{serializer['cep']}/json")
+            result = rqst.json()
             if result:
-                serializer.validated_data['cep'] = result['cep']
-                serializer.validated_data['street'] = result['street']
-                serializer.validated_data['district'] = result['district']
-                serializer.validated_data['city'] = result['city']
-                serializer.validated_data['state'] = result['state']
-                serializer.validated_data['country'] = result['country']
+                serializer.data['cep'] = result['cep']
+                serializer.data['street'] = result['logradouro']
+                serializer.data['district'] = result['bairro']
+                serializer.data['city'] = result['localidade']
+                serializer.data['state'] = result['uf']
+
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_404_NOT_FOUND)
